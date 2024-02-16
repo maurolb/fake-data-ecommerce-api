@@ -9,5 +9,11 @@ export const sequelize = new Sequelize({
   host: envs.HOST,
   port: Number(envs.PORT),
   dialect: "postgres",
+  ssl: true,
+  dialectOptions: {
+    ssl: {
+      require: true,
+    },
+  },
   models: [path.join(__dirname, "..", "models")],
 });
