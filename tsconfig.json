@@ -5,7 +5,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "module": "commonjs",
-    "outDir": "./dist",
+    "outDir": "./public",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
