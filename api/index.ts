@@ -1,3 +1,3 @@
-import app from "../src/index";
+import { server } from "../src/index";
 
-export default app;
+export default server;

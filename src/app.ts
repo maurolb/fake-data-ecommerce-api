@@ -1,22 +1,42 @@
-import express, { Application, urlencoded } from "express";
+import express, { Application, Router, urlencoded } from "express";
 import cors from "cors";
-import { AppRoutes } from "./routes/routes";
 
 import YAML from "yamljs";
 import swaggerUI from "swagger-ui-express";
 
-const app: Application = express();
+interface Options {
+  port?: number;
+  routes: Router;
+}
 
-app.use(cors());
-app.use(express.json());
-app.use(urlencoded({ extended: true }));
+export class ServerApp {
+  public readonly app: Application = express();
+  private readonly port: number;
+  private readonly routes: Router;
 
-const swaggerDocument = YAML.load("./src/swagger/swagger.yaml");
+  constructor(options: Options) {
+    const { port = 3000, routes } = options;
+    this.port = port;
+    this.routes = routes;
+  }
 
-export const specs = swaggerDocument;
+  async start() {
+    // Middlewares
+    this.app.use(express.json());
+    this.app.use(urlencoded({ extended: true }));
+    this.app.use(cors());
 
-app.use("/api/docs", swaggerUI.serve, swaggerUI.setup(specs));
+    // Swagger
+    const swaggerDocument = YAML.load("./src/swagger/swagger.yaml");
+    const specs = swaggerDocument;
+    this.app.use("/api/docs", swaggerUI.serve, swaggerUI.setup(specs));
 
-app.use(AppRoutes.routes);
+    // Routes
+    this.app.use(this.routes);
 
-export default app;
+    // Listen port
+    this.app.listen(this.port, () => {
+      console.log(`Server on port ${this.port}`);
+    });
+  }
+}

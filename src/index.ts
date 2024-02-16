@@ -1,14 +1,31 @@
-import app from "./app";
+import { ServerApp } from "./app";
 import { envs } from "./config/envs";
 import { sequelize } from "./database/dbconfig";
+import { AppRoutes } from "./routes/routes";
 
-async function main() {
+const server = new ServerApp({
+  port: Number(envs.SERVER_PORT),
+  routes: AppRoutes.routes,
+});
+
+main(server);
+
+export { server };
+
+export async function main(server: ServerApp) {
   await sequelize.sync({ force: true });
   console.log("Database synchronized.");
-  app.listen(Number(envs.SERVER_PORT));
-  console.log(`Server is running on port ${envs.SERVER_PORT}`);
+
+  await server.start();
 }
 
-main();
+// async function main() {
+//   await sequelize.sync({ force: true });
+//   console.log("Database synchronized.");
+//   app.listen(Number(envs.SERVER_PORT));
+//   console.log(`Server is running on port ${envs.SERVER_PORT}`);
+// }
 
-export default app;
+// main();
+
+// export default app;
