@@ -1,0 +1,1003 @@
+openapi: "3.1.0"
+info:
+  title: Fake Data Ecommerce API
+  description: |-
+    Hecho con Express, Typescript, Postgress y Sequelize. Utiliza POO con una estructura de archivos personal y autenticación mediante bearer token.
+    
+    Importante:
+    - Al registar un usuario se crea un Cart vacio asignando el respectivo userId.
+    - Al eliminar un usuario se eliminan todos los documentos asociados. CASCADE.
+    - El usuario con rol de admin (2) es capaz de acceder a todos los endpoints mientras que el usuario con rol user (1) tiene acceso unicamente a los endpoints necesarios.
+  version: 0.1.0
+  license:
+    name: ISC
+    url: https://spdx.org/licenses/ISC.html
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: maurobritez96@gmail.com
+servers:
+  - url: http://localhost:3000
+tags:
+  - name: Auth
+    description: Endpoints de autenticación
+  - name: User
+    description: Endpoints de usuario
+  - name: Product
+    description: Endpoints de producto
+  - name: Cart
+    description: Endpoints de carrito
+  - name: ItemCart
+    description: Endpoints de items
+paths:
+  /api/auth/register-admin:
+    post:
+      tags:
+        - Auth
+      summary: Register Admin User
+      description: Crea un usuario con rol 2 (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Operación fallida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequest"
+        "500":
+          description: Internal server error
+  ######################################################## API/AUTH/REGISTER ###########################################################
+  /api/auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register User
+      description: Crea un usuario con rol 1 (usuario)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Operación fallida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequest"
+        "500":
+          description: Internal server error
+  ######################################################## API/AUTH/LOGIN ###########################################################
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login User
+      description: Inicia sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Operación fallida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequest"
+        "500":
+          description: Internal server error
+  ######################################################## API/USERS ###########################################################
+  /api/users:
+    get:
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      summary: Get Users
+      description: Devuelve todos los usuarios
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+  ######################################################## API/USERS/{ID} ###########################################################
+  /api/users/{id}:
+    get:
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      summary: Get User
+      description: Devuelve un usuario
+      parameters:
+        - name: id
+          in: path
+          description: id del usuario
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notfound"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+    put:
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      summary: Update User
+      description: Edita un usuario
+      parameters:
+        - name: id
+          in: path
+          description: id del usuario
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notfound"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+    delete:
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      summary: Delete User
+      description: Elimina un usuario
+      parameters:
+        - name: id
+          in: path
+          description: id del usuario
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: mensaje de éxito
+                example:
+                  message: User deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notfound"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+  ######################################################## API/PRODUCTS ###########################################################
+  /api/products:
+    get:
+      tags:
+        - Product
+      security:
+        - bearerAuth: []
+      summary: Get Products
+      description: Devuelve todos los productos
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+    post:
+      tags:
+        - Product
+      security:
+        - bearerAuth: []
+      summary: Create Product
+      description: Crea un producto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Product"
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+  ######################################################## API/PRODUCTS/{ID} ###########################################################
+  /api/products/{id}:
+    get:
+      tags:
+        - Product
+      security:
+        - bearerAuth: []
+      summary: Get Product
+      description: Devuelve un producto
+      parameters:
+        - name: id
+          in: path
+          description: id del producto
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notfound"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+    put:
+      tags:
+        - Product
+      security:
+        - bearerAuth: []
+      summary: Update Product
+      description: Edita un producto
+      parameters:
+        - name: id
+          in: path
+          description: id del producto
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Product"
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notfound"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+    delete:
+      tags:
+        - Product
+      security:
+        - bearerAuth: []
+      summary: Delete Product
+      description: Elimina un producto
+      parameters:
+        - name: id
+          in: path
+          description: id del producto
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: mensaje de éxito
+                example:
+                  message: Product deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notfound"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+  ######################################################## API/PRODUCTS/IMAGES/{ID} ###########################################################
+  /api/products/images/{id}:
+    put:
+      tags:
+        - Product
+      security:
+        - bearerAuth: []
+      summary: Update Product
+      description: Edita un producto
+      parameters:
+        - name: id
+          in: path
+          description: id del producto
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              tpye: object
+              properties:
+                images:
+                  type: array
+                    items:
+                      type: string
+              example:
+                images: [image1.jpg, image2.jpg]
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notfound"
+        "400":
+          description: Operación fallida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequest"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+  ######################################################## API/CARTS/{ID} ###########################################################
+  /api/carts/{id}:
+    get:
+      tags:
+        - Cart
+      security:
+        - bearerAuth: []
+      summary: Get Cart
+      description: Devuelve un carrito por id
+      parameters:
+        - name: id
+          in: path
+          description: id del carrito
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notfound"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+  ######################################################## API/CARTS/USER-CART ###########################################################
+  /api/carts/user-cart:
+    get:
+      tags:
+        - Cart
+      security:
+        - bearerAuth: []
+      summary: Get Cart By User
+      description: Devuelve el carrito del usuario autenticado
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+  ######################################################## API/CARTS ###########################################################
+  /api/carts:
+    get:
+      tags:
+        - Cart
+      security:
+        - bearerAuth: []
+      summary: Get Carts
+      description: Devuelve todos los carritos que existen
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Cart"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+  ######################################################## API/ITEMS ###########################################################
+  /api/items:
+    get:
+      tags:
+        - ItemCart
+      security:
+        - bearerAuth: []
+      summary: Get Items
+      description: Devuelve todos los items existentes
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ItemCart"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+    post:
+      tags:
+        - ItemCart
+      security:
+        - bearerAuth: []
+      summary: Create Item
+      description: Crea un item para el carrito
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemCart"   
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ItemCart"
+        "400":
+          description: Operación fallida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequest"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+  ######################################################## API/ITEMS ###########################################################
+  /api/items/user-items:
+    get:
+      tags:
+        - ItemCart
+      security:
+        - bearerAuth: []
+      summary: Get Items
+      description: Devuelve todos los items del usuario
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ItemCart"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+  ######################################################## API/ITEMS/{ID} ###########################################################
+  /api/items/{id}:
+    get:
+      tags:
+        - ItemCart
+      security:
+        - bearerAuth: []
+      summary: Get Item
+      description: Devuelve un item
+      parameters:
+        - name: id
+          in: path
+          description: id del item cart
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemCart"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+    put:
+      tags:
+        - ItemCart
+      security:
+        - bearerAuth: []
+      summary: Update Item
+      description: Actualiza un item
+      parameters:
+        - name: id
+          in: path
+          description: id del item cart
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemCart"   
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ItemCart"
+        "400":
+          description: Operación fallida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequest"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+    delete:
+      tags:
+        - ItemCart
+      security:
+        - bearerAuth: []
+      summary: Delete Item
+      description: Elimina un item
+      parameters:
+        - name: id
+          in: path
+          description: id del item cart
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: mensaje de éxito
+                example:
+                  message: Item cart deleted
+        "400":
+          description: Operación fallida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequest"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
+          description: Internal server error
+######################################################## COMPONENTS SECTION ###########################################################
+components:
+  schemas:
+    BadRequest:
+      type: object
+      properties:
+        error:
+          type: string
+          description: mensaje de error
+      example:
+        error: An error message
+    ######################################################## UNAUTHORIZED ###########################################################
+    Unauthorized:
+      type: object
+      properties:
+        error:
+          type: string
+          description: mensaje de error
+      example:
+        error: Invalid token
+    ######################################################## NOT FOUND ###########################################################
+    Notfound:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Recurso no encontrado
+      example:
+        error: Not found
+    ######################################################## REGISTER REQUEST ###########################################################
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: algún nombre
+        email:
+          type: string
+          description: email válido
+        password:
+          type: string
+          description: contraseña de 6 o más caracteres
+      required:
+        - name
+        - email
+        - password
+      example:
+        name: pepito
+        email: pepito@dev.com
+        password: asd123
+    ######################################################## LOGIN REQUEST ###########################################################
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          description: email válido
+        password:
+          type: string
+          description: contraseña de 6 o más caracteres
+      required:
+        - email
+        - password
+      example:
+        email: pepito@dev.com
+        password: asd123
+    ######################################################## AUTH RESPONSE ###########################################################
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: token válido por 2 horas
+        user:
+          type: object
+          properties:
+            id:
+              type: number
+              description: id autogenerado
+            name:
+              type: string
+              description: algún nombre
+            email:
+              type: string
+              description: email válido
+            password:
+              type: string
+              description: contraseña de 6 o más caracteres
+      example:
+        token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzA3NTEyNzc1LCJleHAiOjE3MDc1MTk5NzV9.AJMPbuqlWQdYpbhjtfQo9wHlTJwEWK3zKwzs2L5OYUo
+        user:
+          id: 1
+          name: pepito
+          email: pepito@dev.com
+          password: asd123
+    ######################################################## USER ###########################################################
+    User:
+      type: object
+      properties:
+        id:
+          type: number
+          description: id autogenerado
+        name:
+          type: string
+          description: nombre
+        lastname:
+          type: string
+          description: apellido
+        email:
+          type: string
+          description: email válido
+        password:
+          type: string
+          description: contraseña de 6 o más caracteres
+        address:
+          type: string
+          description: dirección
+        phone:
+          type: string
+          description: número de teléfono
+        image:
+          type: string
+          description: imagen de perfil
+        role:
+          type: number
+          description: rol del usuario
+      required:
+        - name
+        - email
+        - password
+      example:
+        id: 1
+        name: pepito
+        lastname: pistolero
+        email: pepito@dev.com
+        password: asd123
+        address: ciudad barrio calle
+        phone: 12313213
+        image: https://images.pepito.jpg
+        role: 1
+    ######################################################## PRODUCT ###########################################################
+    Product:
+      type: object
+      properties:
+        id:
+          type: number
+          description: id autogenerado
+        category:
+          type: string
+          description: categoria del producto
+        name:
+          type: string
+          description: nombre del producto
+        description:
+          type: string
+          description: descripción del producto
+        price:
+          type: number
+          description: precio del producto
+        stock:
+          type: number
+          description: cantidad de productos en stock
+        images:
+          type: array
+          items:
+            type: string
+      required:
+        - category
+        - name
+        - description
+        - price
+        - stock
+      example:
+        id: 1
+        category: teclados
+        name: hyperex alloy origins core
+        description: teclado mecanico 80% cherry red
+        price: 48
+        stock: 30
+        images: []
+    ######################################################## CART ###########################################################
+    Cart:
+      type: object
+      properties:
+        id:
+          type: number
+          description: id autogenerado
+        userId:
+          type: number
+          description: id del usuario relacionado
+        items:
+          type: array
+          description: items del carrito
+      
+    ######################################################## ITEMCART ###########################################################
+    ItemCart:
+      type: object
+      properties:
+        id:
+          type: number
+          description: id autogenerado
+        cartId:
+          type: number
+          description: id del carrito relacionado
+        productId:
+          type: number
+          description: id del producto relacionado
+        quantity:
+          type: number
+          description: cantidad
+      required:
+        - cartId
+        - productId
+        - quantity
+      example:
+        id: 1
+        cartId: 3
+        productId: 8
+        quantity: 1
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
